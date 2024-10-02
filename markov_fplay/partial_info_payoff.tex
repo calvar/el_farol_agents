@@ -1,0 +1,123 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsfonts,bm}
+\usepackage{graphics,graphicx}
+%\documentclass[pre,showpacs]{revtex4-1}
+%\documentclass[pre,twocolumn,showpacs]{revtex4}
+%\documentclass[12pt]{article}
+%\usepackage[english]{babel}
+%\usepackage{amsmath,amssymb,amsfonts}
+%\usepackage[dvips]{graphicx}
+\usepackage{amsmath}
+\usepackage{color}
+%\usepackage{fancyhdr}
+%\usepackage{showlabels}
+\usepackage{tikz}
+
+\newcommand{\D}[1]{\frac{\partial}{\partial{#1}}}
+\newcommand{\Dd}[2]{\frac{\partial{#1}}{\partial{#2}}}
+\newcommand{\then}{\Rightarrow}
+\newcommand{\deriv}[1]{\frac{d}{d{#1}}}
+\newcommand{\derivd}[2]{\frac{d{#1}}{d{#2}}}
+\newcommand{\derivdd}[2]{\frac{d^2{#1}}{d{#2}^2}}
+
+
+%%%%%%%%%%tikz                                                                  
+\newcommand{\ancho}{1.2}                                                        
+\newcommand{\rad}{1.4}                                                          
+\newcommand{\dbit}{0.56}
+
+\tikzstyle{rect}=[text width=\ancho cm,                                         
+  rectangle,fill=blue!70!red!10!white,align=left,text=black,font=\bfseries]    
+\tikzstyle{white}=[fill=white,align=center,text depth=0.3ex,rectangle,
+  text=black,font=\bfseries] 
+
+
+\begin{document}
+
+\title{Payoff funtion for El Farol problem when using fictitious Markov play with incomplete information}
+\author{Carlos E. \'Alvarez}
+%\date{}
+\maketitle
+
+El Farol bar problem consists in finding an agent-based strategy where $N$ agents try to maximize the benefit they obtain by attending to El Farol Bar. The bar has a threshold of attendance $T_A$, and $A$ is the number of agents that attended to the bar.\\
+
+To attend to the bar has a cost of (-1) units for an agent. If at the end of a round $A\leq T_{A}N$, all attendees get a reward of (+2) units for that round, while if $A> T_{A}N$ there is no reward for the attendees. An agent that does no attend simply gets no reward nor pays any cost.\\
+
+The state $S^{(t)}$ of the system of $N$ agents at round $t$ can be represented by a string of $N$ binary digits
+\begin{align}
+  S^{(t)}=&\underbrace{01101011\cdots10010},\nonumber\\
+  &\hspace{1.6cm}N\nonumber
+\end{align}
+where 1 means that the agent in that position attended to the bar, while 0 means that it did not. Lets call $s_i^{(t)}$ to the state of the $i$th agent at round $t$, that is, the $i$th position on the string $S^{(t)}$.\\
+
+The payoff function $Po$ measures the amount of units an agent $i$ gets on a round, and it is a function of the state taken by the agent on the next round $s_i^{t}$, the assumed state of the system $S^{(t)}$, from which the attendance $A$ is calculated, and the maximum number of allowed attendees
+\begin{align}
+  A_{mx}=T_AN.
+\end{align}
+Assuming that we have complete information about the attendance, the payoff function is
+\begin{align}
+  Po(s_i^{(t)},S^{(t)},A_{mx})=\left\{\begin{array}{ll}
+  1&\text{, if }s_i^{(t)}=1,\ A^{(t)}\leq A_{mx}\\
+  -1&\text{, if }s_i^{(t)}=1,\ A^{(t)}> A_{mx}\\
+  0&\text{, if }s_i^{(t)}=0
+  \end{array}\right. .
+  \label{payoff}
+\end{align}
+
+\section{Incomplete information}
+Equation (\ref{payoff}) can be computed by an agent if it knows the complete state of the system $S$, needed to obtain the assistance $A$. What happens if the agent only has access to the state of a number of bits $b<N$? In this case, the agent is only certain about its own state and the state of $b-1$ of its partners. Regarding the possible state of the unknown parters, an agent can only speculate. Following the principle of maximum entropy (references) the agents will make the most unbiased asumption about the state of the unknown bits, that is, take the distribution with the maximum entropy which, under no further constraints, is the uniform distribution.\\
+
+The payoff function will depend then on the state that agent $i$ plans to be in the next round $s_i^{(t)}$, the assumed state of the set of bits known to the agent $i$ ($K_i^{(t)}$), from which only a partial attendance can be obtained, and $A_{mx}$. As we assume a uniform distribution for the state of the remaining $N-b$ bits, where $b=|K_i|$, the amount of units gained or lost by attending to the bar is replaced by an average gain over the unknown bits.\\
+
+Let $0\leq k_1\leq b$ represent the number of known bits in state $1$, and $0\leq u_1\leq N-b$ represent the number of unknown bits in state $1$. Let us define first a pre-payoff function 
+\begin{align}
+  Po_{pre}(s_i^{(t)},K_i^{(t)},A_{mx})=\left\{\begin{array}{ll}
+  1&\text{, if }s_i^{(t)}=1,\ k_1+u_1\leq A_{mx}\\
+  -1&\text{, if }s_i^{(t)}=1,\ k_1+u_1> A_{mx}\\
+  0&\text{, if }s_i^{(t)}=0
+  \end{array}\right. ,
+  \label{payoffpre}
+\end{align}
+and note that we must let the value of $u_1$ to vary, due to the agent's lack of information. Instead of 1 and -1, we can then use an average value for the scores, over the distribution of the unknown bits. To do this we can count the number of possible states that respect the inequality in the upper raw of equation (\ref{payoffpre}). The number of states that respect $k_1+u_1\leq A_{mx}$ is
+\begin{align}
+  n_r=\sum_{u_1=0}^{A_{mx}-k_1}\binom{N-b}{u_1},
+  \label{resp}
+\end{align}
+while the number of states that do not respect this inequality is
+\begin{align}
+  n_n=2^{N-b}-n_r.
+  \label{noresp}
+\end{align}
+The probability of obtaining a payoff of 1, given that the agent attended, in (\ref{payoffpre}) is given by
+\begin{align}
+  P[k_1+u_1\leq A_{mx}|s_i^{(t)}=1]=\frac{n_r}{2^{N-b}},
+  \label{po_one}
+\end{align}
+while the probability of obtaining a payoff of -1, given that the agent attended is
+\begin{align}
+  P[k_1+u_1> A_{mx}|s_i^{(t)}=1]=\frac{n_n}{2^{N-b}}.
+  \label{po_mone}
+\end{align}
+Then, using (\ref{po_one}) and (\ref{po_mone}), it is possible to define a payoff function for particular values of $A_{mx}$, $N$, and $b$.\\
+
+As an example, assume $N=4$, $b=2$, and $T_A=0.5$, which means that $A_{mx}=T_AN=2$, and say that the two bits the agent knows about are the 1st and 2nd bits, with values $K_i^{(t)}=\color{blue}01}$, that is $k_1=1$. Then
+\begin{align}
+  P[k_1+u_1\leq A_{mx}|s_i^{(t)}=1]&=\frac{1}{2^{2}}\sum_{u_1=0}^{1}\binom{2}{u_1}\nonumber\\
+  &=\frac{1}{4}\left(\underbrace{\frac{2!}{(2-0)!0!}}+\underbrace{\frac{2!}{(2-1)!1!}}\right)\nonumber\\
+  & \hspace{1.8cm} {\color{blue}01}00 \hspace{0.9cm} {\color{blue}01}01,{\color{blue}01}10\nonumber\\
+  &=\frac{3}{4},\nonumber
+\end{align}
+while
+\begin{align}
+  P[k_1+u_1> A_{mx}|s_i^{(t)}=1]=1-P[k_1+u_1\leq A_{mx}|s_i^{(t)}=1]&=\frac{1}{4}(\underbrace{1})=\frac{1}{4}.\nonumber\\
+  &\hspace{1cm}{\color{blue}01}11\nonumber
+\end{align}
+Therefore, the average payoff expected for attending to the bar under these conditions is
+\begin{align}
+  \overline{Po}&=1\times P[k_1+u_1\leq A_{mx}|s_i^{(t)}=1] -1\times P[k_1+u_1> A_{mx}|s_i^{(t)}=1]\nonumber\\ 
+  &=2P[k_1+u_1\leq A_{mx}|s_i^{(t)}=1]-1\nonumber\\
+  &=\frac{1}{2}.\nonumber
+\end{align}
+
+\end{document}
