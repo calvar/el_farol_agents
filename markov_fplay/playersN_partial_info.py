@@ -139,7 +139,7 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1500 #Step at which state frequency is reset
 
-    N = 4 #Number of agents
+    N = 8 #Number of agents
     thresh = 1/2 #Attendance threshold
     b = 4 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
@@ -150,8 +150,11 @@ if __name__ == '__main__':
     Amx = np.floor(N*thresh) #Max number of 1s allowed to get payoff = 1
 
     #Initialize----------------------------
-    #known_idx includes the self index plus other b-1 random indices 
-    agents = [Agent(i, sorted(sample([j for j in range(N) if j!=i],k=b-1)+[i]), str(random.randint(0,1))) for i in range(N)]
+    #known_idx includes the self index plus other b-1 indices 
+    rand_sample = lambda x: sorted(sample([j for j in range(N) if j!=x],k=b-1)+[x]) #use to obtain random indices
+    cycl_sample = lambda x: sorted([(j+1)%N for j in range(x,x+b-1)]+[x]) #use to obtain fixed sequential indices
+    disc_sample = lambda x: sorted([j for j in range(b)] if x<b else [x]+[j for j in range(1,b)]) #disconnected. No one but themselves sees the last N-b indices 
+    agents = [Agent(i, disc_sample(i), str(random.randint(0,1))) for i in range(N)]
     with open("data_p/known_idx_{0:04d}.dat".format(seed),"w") as outf:
         for i in range(len(agents)):
             outf.write("{0}\t{1}\n".format(i,' '.join(str(e) for e in agents[i].known_idx)))
