@@ -48,11 +48,13 @@ def softmax_e(e, E0, E1):
 
 #C/(1+e^(-a*(x-1)))
 def explore_func(C, a, dist, idx):
-    x = 0
-    if dist[idx] > 0:
-        x = np.sum(dist) / dist[idx]
+    x = np.sum(dist) / dist[idx]
     f = -a*(x-1)
     return C/(1+np.exp(f))
+
+def explore_UCB(C, a, dist, idx):
+    x = np.log(np.sum(dist)) / dist[idx]
+    return C*np.sqrt(x)
 
 #def entropy_rate(freq):
 #    tot = freq.sum()
@@ -67,7 +69,7 @@ def explore_func(C, a, dist, idx):
 
 
 class Agent:
-    def __init__(self, idx, known_idx, ini_state):
+    def __init__(self, idx, known_idx, ini_state, ucb=False):
         self.idx = idx           #Index in the complete set of agents
         self.state = ini_state
         self.earnings = 0
@@ -75,6 +77,7 @@ class Agent:
         self.mat_pos = self.known_idx.index(self.idx) #Index in the reduced set of known agents
         sz = 2**len(known_idx)
         self.belief_mat = np.zeros((sz,sz))
+        self.ucb = ucb #Whether to use UCB exploration or bounded exploration
         for i in range(sz):
             tot = 1
             self.belief_mat[i,0] = np.random.rand()*tot
@@ -84,7 +87,7 @@ class Agent:
             self.belief_mat[i,sz-1] = 1-self.belief_mat[i,:sz-1].sum()
         for row in self.belief_mat:
             np.random.shuffle(row)
-        self.state_hist = [0,0] #Number of no-go (0) and number of go(1)
+        self.state_hist = [1,1] #Number of no-go (0) and number of go(1). Initialize in 1 to avoid division by 0.
 
     def expected_payoff(self, curr_state, pos_states, Amx, action):
         known_state = ''.join(curr_state[i] for i in self.known_idx)
@@ -99,21 +102,28 @@ class Agent:
     def decide_action(self, state, pos_states, Amx, e, C, a):
         pay0 = self.expected_payoff(state,pos_states,Amx,"0")
         pay1 = self.expected_payoff(state,pos_states,Amx,"1")
-        pay0 += explore_func(C, a, self.state_hist, 0)
-        pay1 += explore_func(C, a, self.state_hist, 1)
-        if pay0 > pay1:
+        expl0 = 0
+        expl1 = 0
+        if self.ucb:
+            expl0 = explore_UCB(C,a,self.state_hist,0) 
+            expl1 = explore_UCB(C,a,self.state_hist,1)
+        else:
+            expl0 = explore_func(C,a,self.state_hist,0) 
+            expl1 = explore_func(C,a,self.state_hist,1)
+            
+        if pay0+expl0 > pay1+expl1:
             self.state = "0"
-        elif pay0 < pay1:
+        elif pay0+expl0 < pay1+expl1:
             self.state = "1"
         else:
-            self.state = random.randint(0,1)
+            self.state = str(random.randint(0,1))
         #sm = softmax_e(e,pay0,pay1)
         #if np.random.rand() < sm[0]:
         #    self.state = "0"
         #else:
         #    self.state = "1"
         self.state_hist[int(self.state)] += 1
-        return self.state
+        return self.state, pay0, pay1, expl0, expl1
 
     def update_mat(self, curr_state, new_state, old_st_freq, st_freq, lamb):
         known_curr = ''.join(curr_state[i] for i in self.known_idx)
@@ -146,10 +156,10 @@ if __name__ == '__main__':
     random.seed(seed)
     np.random.seed(seed)
 
-    Niters = 2000 #Number of iterations
+    Niters = 4000 #Number of iterations
     Hptr = 5 #Print interval for entropy rate
     Mptr = 50 #Print interval for matrices
-    reset_time = 1500 #Step at which state frequency is reset
+    reset_time = 1000 #Step at which state frequency is reset
 
     N = 4 #Number of agents
     thresh = 1/2 #Attendance threshold
@@ -159,8 +169,9 @@ if __name__ == '__main__':
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 0.1 #exploration function amplitude
+    C = 0.08 #exploration function amplitude
     a = 1 #exploration function rate
+    UCB = True #Use UCB or our bounded proposal
     
     Amx = np.floor(N*thresh) #Max number of 1s allowed to get payoff = 1
 
@@ -169,7 +180,7 @@ if __name__ == '__main__':
     rand_sample = lambda x: sorted(sample([j for j in range(N) if j!=x],k=b-1)+[x]) #use to obtain random indices
     cycl_sample = lambda x: sorted([(j+1)%N for j in range(x,x+b-1)]+[x]) #use to obtain fixed sequential indices
     disc_sample = lambda x: sorted([j for j in range(b)] if x<b else [x]+[j for j in range(1,b)]) #disconnected. No one but themselves sees the last N-b indices 
-    agents = [Agent(i, rand_sample(i), str(random.randint(0,1))) for i in range(N)]
+    agents = [Agent(i,rand_sample(i),str(random.randint(0,1)),ucb=UCB) for i in range(N)]
     with open("data_p/known_idx_{0:04d}.dat".format(seed),"w") as outf:
         for i in range(len(agents)):
             outf.write("{0}\t{1}\n".format(i,' '.join(str(e) for e in agents[i].known_idx)))
@@ -197,24 +208,28 @@ if __name__ == '__main__':
     earnings_evol = [[0] for i in range(N)]
     distr_evol = [[] for i in range(N)]
     matrix_evol = [[] for i in range(N)]
+    payexpl = [[] for i in range(N)]
     for i in range(N):
         distr_evol[i].append(state_freq[i])
         matrix_evol[i].append(agents[i].belief_mat.reshape(-1))
+        payexpl[i].append([0, 0, 0, 0])
 
     #Run iterations-------------------------
     for t in range(Niters):
         #print(t)
 
-        #if t == reset_time:
-        #    old_state_freq = [np.zeros(2**(N-b), dtype=np.uint64) for i in range(N)]
-        #    state_freq = [np.zeros(2**(N-b), dtype=np.uint64) for i in range(N)]
+        if t == reset_time:
+            old_state_freq = [np.zeros(2**(b), dtype=np.uint64) for i in range(N)]
+            state_freq = [np.zeros(2**(b), dtype=np.uint64) for i in range(N)]
         for i in range(N):
             state_freq[i][bin_to_dec(''.join(state[i] for i in agents[i].known_idx))] += 1
 
         #update state
         new_state = ""
         for i in range(N):
-            new_state += agents[i].decide_action(state,pos_states,Amx,e,C,a)
+            act, pay0, pay1, ex0, ex1 = agents[i].decide_action(state,pos_states,Amx,e,C,a) 
+            new_state += act
+            payexpl[i].append([pay0, pay1, ex0, ex1])
         #print("state: {0}".format(new_state))
         
         #update belief matrices
@@ -271,4 +286,8 @@ if __name__ == '__main__':
             for j in range(len(matrix_evol[i])):
                 vstr = str(matrix_evol[i][j]).replace('\n','').lstrip('[').rstrip(']')
                 outf.write("{0}\t{1}\n".format(j*Mptr,vstr))
-    
+
+        with open("data_p/payexpl_{0}_{1:04d}.dat".format(i,seed),"w") as outf:
+            for j in range(len(payexpl[i])):
+                vstr = str(list(map(float,payexpl[i][j]))).replace('\n','').replace(',','').lstrip('[').rstrip(']')
+                outf.write("{0}\t{1}\n".format(j,vstr))

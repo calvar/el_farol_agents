@@ -137,9 +137,9 @@ if __name__ == '__main__':
     Niters = 2000 #Number of iterations
     Hptr = 5 #Print interval for entropy rate
     Mptr = 50 #Print interval for matrices
-    reset_time = 1500 #Step at which state frequency is reset
+    reset_time = 0 #Step at which state frequency is reset
 
-    N = 8 #Number of agents
+    N = 4 #Number of agents
     thresh = 1/2 #Attendance threshold
     b = 4 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.

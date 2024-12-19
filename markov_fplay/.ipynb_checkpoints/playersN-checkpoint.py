@@ -75,8 +75,10 @@ class Agent:
         pay1 = self.expected_payoff(state,pos_states,thresh,"1")
         if pay0 > pay1:
             self.state = "0"
-        else:
+        elif pay0 < pay1:
             self.state = "1"
+        else:
+            self.state = str(random.randint(0,1))
         #sm = softmax_e(e,pay0,pay1)
         #if np.random.rand() < sm[0]:
         #    self.state = "0"
@@ -119,7 +121,7 @@ if __name__ == '__main__':
     Niters = 2000 #Number of iterations
     Hptr = 5 #Print interval for entropy rate
     Mptr = 50 #Print interval for matrices
-    reset_time = 1500 #Step at which state frequency is reset
+    reset_time = 0 #Step at which state frequency is reset
 
     N = 4 #Number of agents
     thresh = 0.5 #Attendance threshold
@@ -156,9 +158,9 @@ if __name__ == '__main__':
     for t in range(Niters):
         #print(t)
 
-        if t == reset_time:
-            old_state_freq = np.zeros(2**N, dtype=np.uint64)
-            state_freq = np.zeros(2**N, dtype=np.uint64)
+        #if t == reset_time:
+        #    old_state_freq = np.zeros(2**N, dtype=np.uint64)
+        #    state_freq = np.zeros(2**N, dtype=np.uint64)
         state_freq[bin_to_dec(state)] += 1
 
         #print(old_state_freq)
