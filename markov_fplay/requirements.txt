@@ -1,4 +1,7 @@
 numpy
+scipy
+jupyterlab
+scikit-learn
 pandas
 matplotlib
 seaborn
