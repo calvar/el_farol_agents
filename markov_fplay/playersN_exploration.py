@@ -222,7 +222,7 @@ if __name__ == '__main__':
             old_state_freq = [np.zeros(2**(b), dtype=np.uint64) for i in range(N)]
             state_freq = [np.zeros(2**(b), dtype=np.uint64) for i in range(N)]
         for i in range(N):
-            state_freq[i][bin_to_dec(''.join(state[i] for i in agents[i].known_idx))] += 1
+            state_freq[i][bin_to_dec(''.join(state[j] for j in agents[i].known_idx))] += 1
 
         #update state
         new_state = ""
@@ -255,7 +255,7 @@ if __name__ == '__main__':
         
         
         for i in range(N):
-            old_state_freq[i][bin_to_dec(''.join(state[i] for i in agents[i].known_idx))] += 1
+            old_state_freq[i][bin_to_dec(''.join(state[j] for j in agents[i].known_idx))] += 1
         state = new_state
 
     #---------------------------------------

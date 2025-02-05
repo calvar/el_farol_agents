@@ -1,4 +1,5 @@
-*dat
-*csv
+*.dat
+*.csv
+*.png
 *~
 markov_fplay/venv/
