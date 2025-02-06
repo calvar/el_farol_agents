@@ -161,15 +161,15 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 8 #Number of agents
+    N = 4 #Number of agents
     thresh = 1/2 #Attendance threshold
-    b = 8 #Number of bits available to each agent. 
+    b = 4 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 0.05 #exploration function amplitude
+    C = 0.0 #exploration function amplitude
     a = 1 #exploration function rate
     UCB = True #Use UCB or our bounded proposal
     

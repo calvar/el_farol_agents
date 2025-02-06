@@ -149,8 +149,8 @@ class Agent:
                     self.belief_mat[i,j] *= (old_st_freq[i]+lamb) / (st_freq[i]+lamb)
                     if j == new_idx:
                         self.belief_mat[i,j] += 1. / (st_freq[i]+lamb)
-        #Verify matrix
-        verify_matrix(self.belief_mat)
+        ##Verify matrix
+        #verify_matrix(self.belief_mat)
 
     def update_earnings(self, Amx, Act_att):
         if self.state == "1":
@@ -179,15 +179,15 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 4 #Number of agents
+    N = 16 #Number of agents
     thresh = 1/2 #Attendance threshold
-    b = 4 #Number of bits available to each agent. 
+    b = 16 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 1.0 #exploration function amplitude
+    C = 0.0 #exploration function amplitude
     
     Amx = np.floor(N*thresh) #Max number of 1s allowed to get payoff = 1
     pos_states = possible_states(b)
