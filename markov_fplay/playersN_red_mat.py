@@ -76,8 +76,9 @@ def verify_matrix(mat):
 # lose |  x  |  x   |  x
 
 class Agent:
-    def __init__(self, idx, known_idx, ini_state, pos_states, Amx):
-        self.idx = idx           #Index in the complete set of agents
+    def __init__(self, idx, known_idx, N, ini_state, pos_states, Amx):
+        self.idx = idx  #Index in the complete set of agents
+        self.Ntot = N
         self.state = ini_state
         self.earnings = 0
         self.known_idx = known_idx
@@ -94,20 +95,20 @@ class Agent:
         #Verify matrix
         verify_matrix(self.belief_mat)
         
-        self.state_earn = {'win': [], 'neut': [], 'lose': []}
+        #self.state_earn = {'win': [], 'neut': [], 'lose': []}
         self.payoffs = {'win': 0, 'neut': 0, 'lose': 0}
+        n_win = 0
+        n_lose = 0
         for state in pos_states:
-            po = payoff(N, state, Amx)[self.mat_pos]
-            if po == 0:
-                self.state_earn['neut'].append(state)
-            elif po < 0:
-                self.state_earn['lose'].append(state)
+            po = payoff(self.Ntot, state, Amx)[self.mat_pos]
+            if po < 0:
+                n_lose += 1
                 self.payoffs['lose'] += po
-            else:
-                self.state_earn['win'].append(state)
+            elif po > 0:
+                n_win += 1
                 self.payoffs['win'] += po
-        self.payoffs['lose'] /= len(self.state_earn['lose'])
-        self.payoffs['win'] /= len(self.state_earn['win'])
+        self.payoffs['lose'] /= n_lose
+        self.payoffs['win'] /= n_win
         self.state_hist = [1,1] #Number of no-go (0) and number of go(1). Initialize in 1 to avoid division by 0.
 
     def expected_payoff(self, curr_state, action):
@@ -160,10 +161,11 @@ class Agent:
                 self.earnings += 1
 
     def reduced_idx(self, state):
+        po = payoff(self.Ntot, state, Amx)[self.mat_pos]
         idx = 1
-        if state in self.state_earn['win']:
+        if po > 0:
             idx = 0
-        elif state in self.state_earn['lose']:
+        elif po < 0:
             idx = 2
         return idx
 
@@ -179,15 +181,15 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 16 #Number of agents
+    N = 8 #Number of agents
     thresh = 1/2 #Attendance threshold
-    b = 16 #Number of bits available to each agent. 
+    b = 8 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 0.0 #exploration function amplitude
+    C = 2.0 #exploration function amplitude
     
     Amx = np.floor(N*thresh) #Max number of 1s allowed to get payoff = 1
     pos_states = possible_states(b)
@@ -197,13 +199,13 @@ if __name__ == '__main__':
     rand_sample = lambda x: sorted(sample([j for j in range(N) if j!=x],k=b-1)+[x]) #use to obtain random indices
     cycl_sample = lambda x: sorted([(j+1)%N for j in range(x,x+b-1)]+[x]) #use to obtain fixed sequential indices
     disc_sample = lambda x: sorted([j for j in range(b)] if x<b else [x]+[j for j in range(1,b)]) #disconnected. No one but themselves sees the last N-b indices 
-    agents = [Agent(i,rand_sample(i),str(random.randint(0,1)),pos_states,Amx) for i in range(N)]
+    agents = [Agent(i,rand_sample(i),N,str(random.randint(0,1)),pos_states,Amx) for i in range(N)]
     with open("data_p/known_idx_{0:04d}.dat".format(seed),"w") as outf:
         for i in range(len(agents)):
             outf.write("{0}\t{1}\n".format(i,' '.join(str(e) for e in agents[i].known_idx)))
 
     #for ag in agents:
-    #    print(ag.state_earn,ag.payoffs)
+    #    print(ag.payoffs)
 
     old_state_freq = [np.zeros(3, dtype=np.uint64) for i in range(N)]
     state_freq = [np.zeros(3, dtype=np.uint64) for i in range(N)]
