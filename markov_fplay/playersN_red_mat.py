@@ -56,14 +56,19 @@ def verify_matrix(mat):
         assert(1-(1.e-8) < tot and tot < 1+(1.e-8)), "Row total is {0}".format(tot)
 
 
-#def entropy_rate(freq):
-#    tot = freq.sum()
-#    dist = freq.copy()/tot
-#    H = 0
-#    for i in range(dist.shape[0]):
-#        if dist[i] > 0:
-#            H -= dist[i] * np.log2(dist[i])
-#    return H/dist.shape[0]
+# def entropy_rate(freq):
+#     tot = 0
+#     for i in freq:
+#         tot += freq[i]
+#     dist = {}
+#     for i in freq:
+#         dist[i] = freq[i]/tot
+#     H = 0
+#     for i in range(len(dist)):
+#         if dist[i] > 0:
+#             H -= dist[i] * np.log2(dist[i])
+#     return H/len(dist)
+
 
 ## REDUCED MATRIX APPROACH
 # Instead of using a belief transition matrix from system states to system states, use a matrix
@@ -181,15 +186,15 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 16 #Number of agents
-    thresh = 1/2 #Attendance threshold
-    b = 16 #Number of bits available to each agent. 
+    N = 4 #Number of agents
+    thresh = 1/4 #Attendance threshold
+    b = 4 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 2.0 #exploration function amplitude
+    C = 0.1 #exploration function amplitude
     
     Amx = np.floor(N*thresh) #Max number of 1s allowed to get payoff = 1
     pos_states = possible_states(b)

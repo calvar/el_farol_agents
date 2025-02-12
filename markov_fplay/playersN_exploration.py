@@ -162,14 +162,14 @@ if __name__ == '__main__':
     reset_time = 1000 #Step at which state frequency is reset
 
     N = 4 #Number of agents
-    thresh = 1/2 #Attendance threshold
+    thresh = 1/4 #Attendance threshold
     b = 4 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 0.0 #exploration function amplitude
+    C = 0.01 #exploration function amplitude
     a = 1 #exploration function rate
     UCB = True #Use UCB or our bounded proposal
     
