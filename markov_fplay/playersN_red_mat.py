@@ -10,6 +10,7 @@ import random
 from random import sample
 from scipy.special import binom
 
+from datetime import datetime
 
 def bin_to_dec(b_str):
     if len(b_str) > 1:
@@ -112,8 +113,8 @@ class Agent:
             elif po > 0:
                 n_win += 1
                 self.payoffs['win'] += po
-        self.payoffs['lose'] /= n_lose
-        self.payoffs['win'] /= n_win
+        self.payoffs['lose'] = 0 if (n_lose==0) else self.payoffs['lose']/n_lose
+        self.payoffs['win'] = 0 if (n_win==0) else self.payoffs['win']/n_win
         self.state_hist = [1,1] #Number of no-go (0) and number of go(1). Initialize in 1 to avoid division by 0.
 
     def expected_payoff(self, curr_state, action):
@@ -186,15 +187,15 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 4 #Number of agents
+    N = 12 #Number of agents
     thresh = 1/4 #Attendance threshold
-    b = 4 #Number of bits available to each agent. 
+    b = 12 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
-    C = 0.1 #exploration function amplitude
+    C = 0.01 #exploration function amplitude
     
     Amx = np.floor(N*thresh) #Max number of 1s allowed to get payoff = 1
     pos_states = possible_states(b)
@@ -244,6 +245,8 @@ if __name__ == '__main__':
         payexpl[i].append([0, 0, 0, 0])
 
     #Run iterations-------------------------
+    now = datetime.now()
+    print('Start time', now.time())
     for t in range(Niters):
         #print(t)
 
@@ -322,3 +325,6 @@ if __name__ == '__main__':
             for j in range(len(payexpl[i])):
                 vstr = str(list(map(float,payexpl[i][j]))).replace('\n','').replace(',','').lstrip('[').rstrip(']')
                 outf.write("{0}\t{1}\n".format(j,vstr))
+
+    now = datetime.now()
+    print('Stop time', now.time())

@@ -10,6 +10,8 @@ import random
 from random import sample
 from scipy.special import binom
 
+from datetime import datetime
+
 
 def bin_to_dec(b_str):
     if len(b_str) > 1:
@@ -161,9 +163,9 @@ if __name__ == '__main__':
     Mptr = 50 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 4 #Number of agents
+    N = 12 #Number of agents
     thresh = 1/4 #Attendance threshold
-    b = 4 #Number of bits available to each agent. 
+    b = 12 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
     e = 64 #Inverse temperature
@@ -215,6 +217,8 @@ if __name__ == '__main__':
         payexpl[i].append([0, 0, 0, 0])
 
     #Run iterations-------------------------
+    now = datetime.now()
+    print('Start time', now.time())
     for t in range(Niters):
         #print(t)
 
@@ -291,3 +295,6 @@ if __name__ == '__main__':
             for j in range(len(payexpl[i])):
                 vstr = str(list(map(float,payexpl[i][j]))).replace('\n','').replace(',','').lstrip('[').rstrip(']')
                 outf.write("{0}\t{1}\n".format(j,vstr))
+                
+    now = datetime.now()
+    print('Stop time', now.time())
