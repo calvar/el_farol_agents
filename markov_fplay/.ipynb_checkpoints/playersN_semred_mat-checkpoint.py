@@ -191,15 +191,15 @@ if __name__ == '__main__':
 
     Niters = 4000 #Number of iterations
     Hptr = 5 #Print interval for entropy rate
-    Mptr = 50 #Print interval for matrices
+    Mptr = 100 #Print interval for matrices
     reset_time = 1000 #Step at which state frequency is reset
 
-    N = 4 #Number of agents
+    N = 16 #Number of agents
     thresh = 1/2 #Attendance threshold
-    b = 4 #Number of bits available to each agent. 
+    b = 16 #Number of bits available to each agent. 
           # By default, the agent has acces to its own previous state.
     assert N >= b
-    e = 0.5    #Epsilon-greedy parameter
+    e = 0.0    #Epsilon-greedy parameter
     lamb = 1 #Weight of the generalized succession rule (equal for all in this case)
 
     C = 0.0 #exploration function amplitude

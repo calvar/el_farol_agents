@@ -2,4 +2,5 @@
 *.csv
 *.png
 *~
+*.pdf
 markov_fplay/venv/
